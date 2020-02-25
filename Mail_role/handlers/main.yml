@@ -1,0 +1,19 @@
+---
+# handlers file for Mail_role
+
+- name: restart dovecot
+  service:
+    name: dovecot
+    state: restarted
+
+- name: restart postfix
+  service:
+    name: postfix
+    state: restarted
+
+- name: restart apache
+  service:
+    name: httpd
+    state: restarted
+
+

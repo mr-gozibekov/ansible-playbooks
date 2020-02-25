@@ -1,0 +1,29 @@
+---
+
+- name: install squirrelmail
+  package:
+    name: "{{ item }}"
+    state: installed
+  with_items:
+    - squirrelmail
+    - httpd
+
+- name: ensure httpd is started and runs
+  service:
+    name: httpd
+    state: started
+    enabled: yes
+
+- name: modify httpd config file
+  template:
+    src: httpd.conf.j2
+    dest: /etc/httpd/conf/httpd.conf
+  notify: restart apache
+
+- name: configure squirrelmail config.php file
+  template:
+    src: squirrelmail_config.j2
+    dest: /usr/share/squirrelmail/config/config.php
+  notify: restart apache
+
+

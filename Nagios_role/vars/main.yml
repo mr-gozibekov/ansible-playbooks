@@ -1,0 +1,22 @@
+---
+
+inventory_hostname:
+  - prdx-ntp
+  - prdx-ftp
+  - prdx-nfs
+  - prdx-samba
+  - prdx-mail
+  - prdx-db
+  - prdx-haproxy
+  - prdx-nagios
+  - prdx-ldap
+  - prdx-jenkins
+  - prdx-nsmaster
+  - prdx-nsworker
+  - prdx-webserver1
+  - prdx-webserver2
+  - prdx-webserver3
+  - prdx-dockworker
+  - prdx-kubem
+  - prdx-kubew1
+

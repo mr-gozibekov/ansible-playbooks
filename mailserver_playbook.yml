@@ -1,0 +1,10 @@
+---
+
+- name: configure mail server
+  remote_user: ansible
+  become: yes
+  hosts: 192.168.1.26
+  gather_facts: true
+  roles:
+    - Mail_role 
+

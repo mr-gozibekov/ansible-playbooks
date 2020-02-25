@@ -1,0 +1,11 @@
+---
+# tasks file for Mail_role
+
+- name: install epel repo
+  package: 
+    name: epel-release
+    state: installed
+
+- include: postfix.yml
+- include: dovecot.yml
+- include: squirrelmail.yml

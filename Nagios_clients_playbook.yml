@@ -1,0 +1,33 @@
+---
+
+- name: configure nagios-client servers
+  remote_user: ansible
+  become: yes
+  hosts: all,!prdx-nagios 
+  gather_facts: true
+  tasks:
+    - name: install epel repo
+      yum:
+        name: epel-release
+        state: present
+   
+    - name: Install Plugins and nrpe
+      package : 
+        name: '{{ item }}'
+        state: latest
+      when: ansible_os_family == 'RedHat'
+      with_items:
+        - nagios-plugins-all
+        - nrpe
+
+    - name: configure nrpe to accept requests from nagios server 
+      lineinfile:
+        path: /etc/nagios/nrpe.cfg
+        regexp: '^allowed_hosts='
+        line: 'allowed_hosts=127.0.0.1,prdx-nagios'
+
+    - name: Enable NRPE service
+      service:
+        name: nrpe
+        state: started
+        enabled: yes

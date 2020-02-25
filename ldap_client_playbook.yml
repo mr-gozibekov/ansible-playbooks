@@ -1,0 +1,47 @@
+---
+
+- name: configure ldap server
+  remote_user: ansible
+  become: yes
+  hosts: 192.168.1.26
+  gather_facts: true
+  tasks: 
+    - name: Install required packages
+      yum:
+        name: "{{ item }}"
+        state: present
+      with_items: 
+        - openldap-clients
+        - nss-pam-ldapd
+        - authconfig
+        - nfs-utils
+        - autofs
+   
+    - name: start the services
+      service:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      with_items:
+        - autofs
+
+    - name: Redhat | Execute authconfig
+      command: "authconfig --enableldap --enableldapauth --ldapserver=prdx-ldap.ziyotek.local --ldapbasedn='dc=ziyotek,dc=local' --update"
+      changed_when: false
+
+    - name: create mountpoint
+      file: path=/share/home state=directory mode=777
+
+    - name: modify /etc/auto.master file
+      lineinfile: 
+        path: /etc/auto.master
+        regexp: '^/share /etc/auto.direct --timeout 60'
+        line: '/share/home /etc/auto.direct --timeout 60'
+
+    - name: create direct-mapping file
+      copy: content="* -fstype=autofs,rw,sync prdx-nfs:/share/home/&" dest=/etc/auto.direct
+      notify: restart autofs
+  
+  handlers:
+    - name: restart autofs
+      service: name=autofs state=restarted

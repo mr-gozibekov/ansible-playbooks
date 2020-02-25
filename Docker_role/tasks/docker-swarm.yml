@@ -1,0 +1,44 @@
+---
+
+- name: Install docker-py and six packages to use docker-swarm module on ansible
+  pip:
+    name: '{{ item }}'
+    state: present
+  with_items:
+    - docker-py
+
+- name: Init swarm manager master
+  run_once: true
+  docker_swarm:
+    advertise_addr: '{{ dockmaster_addr }}'
+    listen_addr: '{{ dockmaster_addr }}'
+    state: present
+  register: swarm_facts
+
+# following command with grep separates the line of docker-swarm-join command for the worker nodes to execute
+- name: Get the worker join-token.
+  shell: "docker swarm join-token worker |grep 'docker swarm join'"
+  changed_when: False
+  register: join_token_worker_result
+
+# what we doing here is, the above variable from register command has all the variables included, so to separate onlt the docker-swarm-join command, we need to create another variable out of the above variable.
+- name: store swarm cluster join worker command
+  run_once: true
+  set_fact:
+    swarm_cluster_join_worker_command: "{{ join_token_worker_result.stdout }}"
+
+- name: Join Worker Nodes to the cluster
+  run_once: true
+  delegate_to: '{{ item }}'
+  command: '{{ swarm_cluster_join_worker_command }}'
+  with_items: '{{ swarm_cluster_workers }}'
+  notify: restart docker
+
+- name: create nginx service with 2 replicas
+  shell: 'docker service create --name swarm_cluster4nginx --replicas=2 -p 88:80 nginx:latest'
+  changed_when: false
+
+- name: create mariadb with 2 replicas
+  shell: 'docker service create --name swarm_cluster4mariadb --replicas=2 -p 81:80 mariadb:latest'
+  changed_when: false
+

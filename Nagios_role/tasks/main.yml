@@ -1,0 +1,6 @@
+---
+
+- include: RedHat_packages.yml 
+- include: compile_nagios.yml
+- include: install_nagios_plugin.yml
+- include: configs.yml

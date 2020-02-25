@@ -1,0 +1,52 @@
+---
+
+- name: install samba
+  remote_user: ansible
+  become: yes
+  hosts: prdx-samba
+  gather_facts: true
+  tasks:
+    - name: install samba packages for centos7
+      package:
+        name: "{{ item }}"
+        state: latest
+      with_items:
+        - samba
+        - samba-common
+        - samba-client
+      when:
+        - ansible_distribution_major_version == "7"
+        - ansible_distribution == "CentOS"
+
+    - name: start and enable samba services
+      service: 
+        name: "{{ item }}"     
+        state: started
+        enabled: yes
+      with_items: 
+        - smb
+        - nmb
+  
+    - name: create mountable dir 
+      file: name=/sambashare state=directory mode=777 owner=root group=root
+
+    - name: modify smb.conf file 
+      template: src=/ansible/Samba_Playbook/smb.conf.j2 dest=/etc/samba/smb.conf
+      notify: 
+        - restart samba
+    - name: create samba account
+      user: name=smbuser state=present
+   
+    - name:  password for smbuser
+      shell: "(echo 'password' ; echo 'password') | smbpasswd -a smbuser"
+
+  handlers: 
+    - name: restart samba
+      service: 
+        name: "{{ item }}"
+        state: restarted
+      with_items:
+        - smb
+        - nmb
+  
+     

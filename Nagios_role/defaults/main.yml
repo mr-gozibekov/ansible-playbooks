@@ -1,0 +1,14 @@
+---
+
+nagios_download_dir: "{{ ansible_env.HOME }}/nagios"
+nagios_url: https://assets.nagios.com/downloads/nagioscore/releases/nagios-4.4.3.tar.gz
+nagios_monitoring_user: nagios
+nagios_monitoring_command_group: nagcmd
+nagios_users:
+  - user: nagiosadmin
+    pass: Password1change
+
+nagios_src: "nagios-4.4.3"
+nagios_pluginsurl: http://nagios-plugins.org/download/nagios-plugins-2.2.1.tar.gz
+nagios_pluginssrc: "nagios-plugins-2.2.1"
+nagios_apache_service: httpd

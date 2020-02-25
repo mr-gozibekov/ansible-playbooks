@@ -1,0 +1,40 @@
+---
+
+- name: edit config file 
+  lineinfile: 
+    path: /usr/local/nagios/etc/nagios.cfg
+    regexp: '^#cfg_dir='
+    line: 'cfg_dir=/usr/local/nagios/etc/servers'
+
+- name: create servers folder 
+  file: path=/usr/local/nagios/etc/servers  state=directory 
+
+- name: edit Nagios contacts configuration file
+  template: 
+    src: contacts.cfg.j2
+    dest: /usr/local/nagios/etc/objects/contacts.cfg
+
+- name: create per-server conf file to monitor
+  copy:
+    remote_src: yes
+    src: "/usr/local/nagios/etc/objects/localhost.cfg"
+    dest: "/usr/local/nagios/etc/servers/{{ item }}.cfg"
+    owner: root
+    group: root
+    mode: 0755
+  with_items: "{{ inventory_hostname }}"
+
+  # create admin users to access web interface
+- htpasswd: 
+    path: /usr/local/nagios/etc/htpasswd.users
+    create: yes
+    name: nagiosadmin
+    password: password
+
+- name: start nagios 
+  service: 
+    name: nagios
+    state: started 
+    enabled: yes
+  notify: restart apache
+

@@ -1,0 +1,32 @@
+---
+
+- name: install ntp on clients
+  remote_user: ansible
+  become: yes
+  hosts: all
+  tasks:
+    - name: install ntp
+      package:
+        name: ntp
+        state: latest
+
+    - name: modify ntp.conf file 
+      template: src=/PROJECT/ntp_clients_Playbook/ntp.conf.j2 dest=/etc/ntp.conf
+   
+    - name: start and enable ntp services
+      service:
+        name: ntpd
+        state: started
+        enabled: yes
+ 
+    - name: modify timezone
+      shell: "timedatectl set-timezone Asia/Tashkent"
+      notify:
+        - restart ntp service
+
+  handlers:
+    - name: restart ntp service
+      service:
+        name: ntpd
+        state: restarted
+

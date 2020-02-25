@@ -1,0 +1,30 @@
+---
+
+openldap_packages:
+  - openldap-clients
+  - openldap  
+  - openldap-servers 
+  - openssl
+  - epel-release
+  - httpd
+openssl_cert_packages:
+  - openssl
+
+phpldapadmin_packages:
+  - phpldapadmin
+
+openldap_configuration_file: /etc/openldap/ldap.conf
+ldap_password: password
+schema_path: /etc/openldap/schema
+
+#for ssl certificate
+openssl_cert_country: US 
+openssl_cert_state: NY
+openssl_cert_organization: Ziyotek
+openssl_cert_unit: IT
+openssl_cert_common_name: admin
+openssl_cert_days: 365
+openssl_cert_key_bits: 4096
+
+openssl_cert_workdir: /etc/openldap/certs
+

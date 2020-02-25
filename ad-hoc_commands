@@ -1,0 +1,9 @@
+
+#disable NM in order not to let it customize /etc/resolv.conf file
+#ansible all -m command -a "systemctl disable NetworkManager" --become
+
+#disable permit root login for system hardening purpose
+#ansible all -m shell -a "sed -i 's/#PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config" --become
+
+#disable selinux
+#ansible all -m command -a 'sed -i "s/SELINUX=enforcing/SELINUX=permissive/" /etc/selinux/config' --become

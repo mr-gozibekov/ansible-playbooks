@@ -1,0 +1,31 @@
+---
+
+- name: Remove older version docker-packages if exists
+  package:
+    name: '{{ item }}'
+    state: absent
+  with_items: '{{ removable_packages }}'
+
+- name: Install needed packages
+  package:
+    name: '{{ item }}'
+    state: present
+  with_items: '{{ dependancy_packages }}'
+
+- name: add docker repo
+  shell: 'yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo'
+
+- name: Install docker-ce
+  package:
+    name: '{{ docker_package }}'
+    state: present
+
+- name: start and enable docker.service
+  service:
+    name: docker.service
+    state: started
+    enabled: yes
+
+- include: docker-swarm.yml
+  delegate_to: prdx-docker 
+

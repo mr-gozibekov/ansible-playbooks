@@ -1,0 +1,38 @@
+---
+
+- name: install haproxy
+  remote_user: ansible
+  become: yes
+  hosts: prdx-haproxy
+  gather_facts: true
+  tasks:
+    - name: install haproxy package for centos7
+      package:
+        name: haproxy
+        state: latest
+      when:
+        - ansible_distribution_major_version == "7"
+        - ansible_distribution == "CentOS"
+
+    - name: start and enable haproxy services
+      service:
+        name: haproxy
+        state: started
+        enabled: yes
+    
+    - name: create statistics file
+      file: 
+        path: /var/lib/haproxy/stats
+        state: touch
+        mode: 664 
+ 
+    - name: modify haproxy configuration.
+      template: src=/PROJECT/Haproxy_playbook/haproxy.cfg.j2 dest=/etc/haproxy/haproxy.cfg
+      notify: restart haproxy
+
+  handlers:
+    - name: restart haproxy
+      service:
+        name: haproxy
+        state: restarted
+

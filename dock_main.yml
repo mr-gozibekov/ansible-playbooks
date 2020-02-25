@@ -1,0 +1,55 @@
+---
+
+#- name: Remove older version docker-packages if exists
+#  package:
+#    name: '{{ item }}'
+#    state: absent
+#  with_items: '{{ removable_packages }}'
+
+- name: Install needed packages
+  package:
+    name: '{{ item }}'
+    state: present
+  with_items: '{{ dependancy_packages }}'
+
+- name: add docker repo
+  shell: 'yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo'
+
+- name: Install docker-ce
+  package:
+    name: '{{ docker_package }}'
+    state: present
+
+- name: start and enable docker.service
+  service:
+    name: docker.service
+    state: started
+    enabled: yes
+
+- name: Init swarm manager master
+  shell: docker swarm init 
+  ignore_errors: yes
+
+- name: Get the worker join-token.
+  shell: docker swarm join-token -q worker
+  changed_when: False
+  register: docker_worker_token
+
+- name: Join the pending Swarm worker nodes.
+  shell: docker swarm join
+        --listen-addr '{{ dockmaster_addr }}'
+        --advertise-addr '{{ dockmaster_addr }}'
+        --token "{{ ['docker_worker_token.stdout']['dockmaster_addr'] }}"
+  delegate_to: '{{ dockworker_addr }}'
+  changed_when: False
+
+
+- name: create nginx service with 2 replicas
+  shell: 'docker service create --name swarm_cluster4nginx --replicas=2 -p 88:80 nginx:latest'
+  changed_when: false
+
+- name: create mariadb with 2 replicas
+  shell: 'docker service create --name swarm_cluster4mariadb --replicas=2 -p 81:80 mariadb:latest'
+  changed_when: false
+
+

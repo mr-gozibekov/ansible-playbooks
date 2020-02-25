@@ -1,0 +1,33 @@
+---
+
+- name: install epel repo
+  yum:
+    name: epel-release
+    state: present
+
+- name: install apache
+  yum:
+    name: ['php','httpd']
+    state: present
+- name: Install Nagios pnd NRPE rerequisites for CentOS
+  yum:
+    name: ['wget','gcc','glibc','glibc-common','gd','gd-devel','make','net-snmp','openssl-devel','unzip']
+    state: present
+- name: install  - python-passlib for htpasswd command 
+  yum: 
+    name: python-passlib
+    state: present
+
+- name: http service state
+  service: name={{ nagios_apache_service }} state=started enabled=yes
+
+- name: create nagios group
+  group: name={{ nagios_monitoring_command_group }} state=present
+
+- name: create nagios user
+  user: name={{ nagios_monitoring_user }} state=present groups={{ nagios_monitoring_command_group }} append=yes
+
+- name: add apache user to nagcmd group
+  user: name=apache state=present  groups={{ nagios_monitoring_command_group }} append=yes
+
+

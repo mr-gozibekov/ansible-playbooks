@@ -1,0 +1,41 @@
+---
+# tasks file for Webservers_Role
+
+- name: install apache packages for centos7
+  package:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - httpd
+    - net-tools
+    - elinks
+    - python-passlib
+    - rsync
+  when:
+    - ansible_distribution_major_version == "7"
+    - ansible_distribution == "CentOS"
+
+- name: start the services
+  service:
+    name: httpd
+    state: started
+    enabled: yes
+
+- name: modify httpd.conf file 
+  template: src=httpd.conf.j2 dest=/etc/httpd/conf/httpd.conf
+
+- name: insert servername in httpd.conf file
+  shell: "echo 'ServerName {{ ansible_fqdn }}' >>/etc/httpd/conf/httpd.conf" 
+ 
+- htpasswd:
+    path: /var/www/.htpasswd 
+    name: apache_user
+    password: password
+ 
+- name:  
+  synchronize:
+    src: /PROJECT/Webservers_Role/files/direngine 
+    dest: /var/www/html/ 
+    recursive: yes
+  notify: restart apache
+

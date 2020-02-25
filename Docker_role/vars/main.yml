@@ -1,0 +1,23 @@
+---
+
+removable_packages:
+  - docker
+  - docker-common 
+  - docker-selinux 
+  - docker-engine-selinux 
+  - docker-engine 
+  - docker-ce
+dependancy_packages:
+  - yum-utils
+  - device-mapper-persistent-data
+  - lvm2
+  - python3-pip
+docker_package: docker-ce
+
+dockmaster_addr: 192.168.1.18
+
+swarm_cluster_workers: 
+  - 192.168.1.22
+
+
+ 

@@ -1,0 +1,9 @@
+---
+
+- name: configure apache
+  remote_user: ansible
+  become: yes
+  hosts: webservers
+  gather_facts: true
+  roles:
+    - Webservers_Role

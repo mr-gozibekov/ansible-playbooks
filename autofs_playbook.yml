@@ -1,0 +1,40 @@
+---
+
+- name: install autofs for all VMs
+  remote_user: ansible
+  become: yes
+  hosts: prdx-dockworker
+  gather_facts: true
+  tasks:
+    - name: install nfs packages for centos7
+      package:
+        name: "{{ item }}"
+        state: latest
+      with_items:
+        - nfs-utils
+        - autofs
+      when:
+        - ansible_distribution_major_version == "7"
+        - ansible_distribution == "CentOS"
+
+    - name: create mountpoint
+      file: path=/share state=directory mode=777
+ 
+    - name: modify /etc/auto.master file
+      shell: echo  "/share /etc/auto.direct --timeout 60" >>/etc/auto.master
+ 
+    - name: create direct-mapping file
+      copy: content="* -rw,sync prdx-nfs:/share/&" dest=/etc/auto.direct
+
+    - name: ensure firewalld is disable
+      firewalld: service=firewalld state=disabled permanent=yes
+
+    - name: start the services
+      service:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      with_items:
+        - rpcbind
+        - autofs
+        - nfs-server

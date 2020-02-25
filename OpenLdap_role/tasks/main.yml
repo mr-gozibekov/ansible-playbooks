@@ -1,0 +1,72 @@
+---
+
+- name: Install required packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ openldap_packages }}"
+
+- name: Start ldap service
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  with_items: 
+    - slapd
+    - httpd
+
+- name: Register encripted password
+  command: slappasswd -h {SSHA} -s "{{ ldap_password }}"
+  register: ldap_encripted_password
+
+- name: Copy hdb templates
+  template:
+    src: hdb.ldif
+    dest: /tmp
+
+- name: Load hdb template into ldap
+  command: ldapmodify -Y EXTERNAL  -H ldapi:/// -f /tmp/hdb.ldif
+
+- name: Copy monitor templates
+  template:
+    src: monitor.ldif
+    dest: /tmp
+
+- name: Load monitor template into ldap
+  command: ldapmodify -Y EXTERNAL  -H ldapi:/// -f /tmp/monitor.ldif
+
+- name: create ldap file 
+  file: path=/etc/sysconfig/ldap state=touch owner=root group=root
+
+- name: configure openldap to listen SSL/TLS
+  file: 
+    content: "SLAPD_LDAPS = yes"
+    dest: /etc/sysconfig/ldap
+
+- include_tasks: "openssl_cert.yml"
+
+#To create these OU’s, you can create an initial LDIF file as shown in the below example. In this example, this file allows you to create the base container which is dc=ziyotek,dc=com and it creates two organizational units with the names users and groups in that container.
+- name: Copy base.ldif templates
+  template:
+    src: base.ldif
+    dest: /tmp
+
+- name: Load base.ldif template into ldap
+  command: "echo 'password'| ldapadd -x -W -D 'cn=admin,dc=ziyotek,dc=local' -f /tmp/base.ldif"
+  register: ldap_result_code1
+  failed_when: ldap_result_code1.rc not in [0,80]
+  changed_when: ldap_result_code1.rc not in [0,80]
+
+
+- name: Load some schemas (ignoring duplicate entries error for idempotence)
+  command: "ldapadd -Y EXTERNAL -H ldapi:/// -f {{ schema_path }}/{{ item }}"
+  register: ldap_result_code2
+  failed_when: ldap_result_code2.rc not in [0,80]
+  changed_when: ldap_result_code2.rc not in [0,80]
+  with_items:
+    - cosine.ldif
+    - nis.ldif
+    - inetorgperson.ldif
+  notify: restart slapd 
+
+- include_tasks: "ldap_gui.yml"

@@ -1,0 +1,37 @@
+---
+
+- name: create nagios download folder
+  file: path={{ nagios_download_dir }}/nagios state=directory mode=0755
+
+- name: GET Nagios
+  get_url: url={{ nagios_url }} dest={{ nagios_download_dir }}
+
+- name: Unpack Nagios source files
+  shell: cd {{ nagios_download_dir }} && tar -xzvf nagios-4*.tar.gz 
+  register: nagios_result_code
+  failed_when: nagios_result_code.rc not in [0,80]
+  changed_when: nagios_result_code.rc not in [0,80]
+
+- name: ./configure
+  shell: cd {{ nagios_download_dir }}/nagios-4* && ./configure --with-command-group={{ nagios_monitoring_command_group }} 
+
+- name: Make all
+  shell: cd {{ nagios_download_dir }}/nagios-4* && make all 
+
+- name: Make install
+  shell: cd {{ nagios_download_dir }}/nagios-4* && make install
+
+- name: Make install-config
+  shell: cd {{ nagios_download_dir }}/nagios-4* && make install-config
+
+- name: Make install-commandmode
+  shell: cd {{ nagios_download_dir }}/nagios-4* && make install-commandmode
+
+- name: Make install-init
+  shell: cd {{ nagios_download_dir }}/nagios-4* && make install-init
+
+- name: Make install-webconf
+  shell: cd {{ nagios_download_dir }}/nagios-4* && make install-webconf
+  notify: restart apache
+
+

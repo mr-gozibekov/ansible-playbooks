@@ -1,0 +1,10 @@
+---
+
+- name: configure docker server
+  remote_user: ansible
+  become: yes
+  hosts: prdx-docker,prdx-dockworker
+  gather_facts: true
+  roles:
+    - Docker_role 
+

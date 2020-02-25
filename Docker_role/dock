@@ -1,0 +1,16 @@
+- name: Join Worker Nodes to the Swarm
+  docker_swarm:
+    advertise_addr: '{{ dockmaster_addr }}'
+    remote_addrs: '{{ dockworker_addr }}'
+    join_token: "{{ ['docker_worker_token.stdout']['dockmaster_addr'] }}"
+    state: join
+  notify: restart docker
+
+
+- name: Join the pending Swarm worker nodes.
+  shell: docker swarm join --token "{{ ['docker_worker_token.stdout']['dockmaster_addr'] }}"
+  delegate_to: '{{ dockworker_addr }}'
+  changed_when: False
+
+
+# same plays in diff form

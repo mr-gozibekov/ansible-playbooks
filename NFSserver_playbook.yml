@@ -1,0 +1,9 @@
+---
+
+- name: configure nfs-server
+  remote_user: ansible
+  become: yes
+  hosts: prdx-ldap
+  gather_facts: true
+  roles: 
+    - NFS_role

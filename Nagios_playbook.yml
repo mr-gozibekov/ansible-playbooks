@@ -1,0 +1,10 @@
+---
+
+- name: configure nagios server
+  remote_user: ansible
+  become: yes
+  hosts: prdx-nagios
+  gather_facts: true
+  roles:
+    - Nagios_role
+

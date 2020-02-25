@@ -1,0 +1,43 @@
+---
+
+- name: install vsftpd
+  remote_user: ansible
+  become: yes
+  hosts: prdx-ftp
+  tasks:
+    - name: Install vsftpd
+      package:
+        name: vsftpd
+        state: present
+
+    - name: start the services
+      service:
+        name: vsftpd
+        state: started
+        enabled: yes
+   
+    - name: configure vsftpd.conf file
+      copy:
+        src: /ansible/Vsftpd_Playbook/vsftpd.conf.j2
+        dest: /etc/vsftpd/vsftpd.conf
+      notify: 
+        - restart vsftpd.service   
+    - name: create local ftpuser
+      user:
+        name: ftpuser
+        state: present
+        password: "5HZI0K0mA4zdE"
+
+    - name: ensure firewalld is disable
+      firewalld:
+        service: firewalld
+        state: disabled
+        permanent: yes
+    
+  handlers: 
+    - name: restart vsftpd.service
+      service:
+        name: vsftpd
+        state: restarted
+       
+
